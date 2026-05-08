@@ -1,0 +1,22 @@
+name = "orbitex-api"
+type = "javascript"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+account_id = "eaa2ed1082f52a22a0db9cf4f8061c72"
+workers_dev = true
+
+[env.production]
+name = "orbitex-api-production"
+vars = { ENVIRONMENT = "production" }
+
+[env.staging]
+name = "orbitex-api-staging"
+vars = { ENVIRONMENT = "staging" }
+
+# Environment variables (set these in Cloudflare dashboard)
+
+
+# Routes (optional - for custom domain)
+# [[routes]]
+# pattern = "api.orbitex.com/*"
+# zone_name = "orbitex.com"
