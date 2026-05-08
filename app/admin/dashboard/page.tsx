@@ -106,6 +106,19 @@ export default function AdminDashboard() {
               </Link>
             </CardContent>
           </Card>
+
+          {/* Contact */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact</CardTitle>
+              <CardDescription>Edit contact information</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/admin/contact">
+                <Button className="w-full">Edit Contact</Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
