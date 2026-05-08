@@ -6,12 +6,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Cloudflare Pages compatibility
-  experimental: {
-    isrMemoryCacheSize: 0,
-  },
-  // Skip static optimization for dynamic pages
-  staticPageGenerationTimeout: 120,
+  output: 'export',
+  distDir: 'dist',
 }
 
 export default nextConfig
