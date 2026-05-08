@@ -57,11 +57,31 @@ export default function ServicesEditorPage() {
     setIsLoading(false);
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editingId && formData) {
       const updated = services.map(s => s.id === editingId ? { ...s, ...formData } : s);
       setServices(updated);
-      localStorage.setItem('admin_services', JSON.stringify(updated));
+      
+      try {
+        const workerApi = process.env.NEXT_PUBLIC_WORKER_API || 'https://orbitex-api.pthamiz.workers.dev';
+        
+        console.log('[v0] Saving services to Worker API:', updated);
+        
+        const response = await fetch(`${workerApi}/api/services`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updated),
+        });
+
+        const data = await response.json();
+        console.log('[v0] Save response:', data);
+
+        // Also save to localStorage as backup
+        localStorage.setItem('admin_services', JSON.stringify(updated));
+      } catch (error) {
+        console.log('[v0] Save error:', error);
+        localStorage.setItem('admin_services', JSON.stringify(updated));
+      }
     }
     setEditingId(null);
     setFormData({});

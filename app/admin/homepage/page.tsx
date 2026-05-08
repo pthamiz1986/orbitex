@@ -36,12 +36,36 @@ export default function HomepageEditor() {
     setIsLoading(false);
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
-    localStorage.setItem('admin_homepage_content', JSON.stringify(content));
-    setSuccess('Homepage updated successfully!');
-    setTimeout(() => setSuccess(''), 3000);
-    setIsSaving(false);
+    try {
+      const workerApi = process.env.NEXT_PUBLIC_WORKER_API || 'https://orbitex-api.pthamiz.workers.dev';
+      
+      console.log('[v0] Saving homepage to Worker API:', content);
+      
+      const response = await fetch(`${workerApi}/api/homepage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(content),
+      });
+
+      const data = await response.json();
+      console.log('[v0] Save response:', data);
+
+      if (response.ok) {
+        // Also save to localStorage as backup
+        localStorage.setItem('admin_homepage_content', JSON.stringify(content));
+        setSuccess('Homepage updated successfully!');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setSuccess(`Error: ${data.error || 'Failed to save'}`);
+      }
+    } catch (error) {
+      console.log('[v0] Save error:', error);
+      setSuccess('Error saving to server');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (isLoading) return <div className="p-8">Loading...</div>;
