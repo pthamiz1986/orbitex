@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function AdminLogin() {
   const router = useRouter()
+  const [username, setUsername] = useState('admin')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -20,15 +21,23 @@ export default function AdminLogin() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/admin/login', {
+      const workerApi = process.env.NEXT_PUBLIC_WORKER_API || 'https://orbitex-api.pthamiz.workers.dev'
+      
+      const response = await fetch(`${workerApi}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        throw new Error('Invalid password')
+        throw new Error(data.error || 'Invalid credentials')
       }
+
+      // Store token in localStorage
+      localStorage.setItem('admin_token', data.token)
+      localStorage.setItem('admin_username', data.username)
 
       router.push('/admin/dashboard')
     } catch (err) {
@@ -43,7 +52,7 @@ export default function AdminLogin() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">ORBITEX Admin</CardTitle>
-          <CardDescription>Enter your admin password</CardDescription>
+          <CardDescription>Enter your credentials</CardDescription>
         </CardHeader>
         <CardContent>
           {error && (
@@ -54,13 +63,28 @@ export default function AdminLogin() {
           
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
+              <label htmlFor="username" className="text-sm font-medium">
+                Username
+              </label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="Enter username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                disabled={isLoading}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium">
-                Admin Password
+                Password
               </label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter admin password"
+                placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
