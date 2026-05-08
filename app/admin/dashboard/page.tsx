@@ -22,7 +22,8 @@ export default function AdminDashboard() {
   if (!isAuthed) return null
 
   const handleLogout = () => {
-    document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
+    localStorage.removeItem('admin_token')
+    localStorage.removeItem('admin_username')
     router.push('/admin/login')
   }
 

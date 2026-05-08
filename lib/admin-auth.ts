@@ -1,12 +1,13 @@
 export function isAuthenticated(): boolean {
-  if (typeof document === 'undefined') return false
+  if (typeof localStorage === 'undefined') return false
   
-  const cookies = document.cookie.split(';')
-  return cookies.some(cookie => 
-    cookie.trim().startsWith('admin_token=') && cookie.includes('authenticated')
-  )
+  const token = localStorage.getItem('admin_token')
+  return !!token && token.length > 0
 }
 
 export function logout() {
-  document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem('admin_token')
+    localStorage.removeItem('admin_username')
+  }
 }
