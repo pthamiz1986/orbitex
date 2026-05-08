@@ -20,3 +20,17 @@ vars = { ENVIRONMENT = "staging" }
 # [[routes]]
 # pattern = "api.orbitex.com/*"
 # zone_name = "orbitex.com"
+[[d1_databases]]
+binding = "DB"
+database_name = "orbitex"
+database_id = "11a39910-78cb-4cb5-8369-5b54addb3a5a"  # Replace this
+
+[[d1_databases]]
+binding = "orbitex_production"
+database_name = "orbitex-production"
+database_id = "05237eda-fea3-4629-ae55-b1677659fee7"
+
+[[d1_databases]]
+binding = "orbitex_staging"
+database_name = "orbitex-staging"
+database_id = "21af791d-288c-4024-9501-d376b507f578"
