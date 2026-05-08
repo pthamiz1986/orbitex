@@ -4,7 +4,7 @@ main = "worker.js"
 compatibility_date = "2024-01-01"
 account_id = "eaa2ed1082f52a22a0db9cf4f8061c72"
 workers_dev = true
-
+vars = { ADMIN_PASSWORD = "admin123" }
 [env.production]
 name = "orbitex-api-production"
 vars = { ENVIRONMENT = "production" }
@@ -34,3 +34,4 @@ database_id = "05237eda-fea3-4629-ae55-b1677659fee7"
 binding = "orbitex_staging"
 database_name = "orbitex-staging"
 database_id = "21af791d-288c-4024-9501-d376b507f578"
+

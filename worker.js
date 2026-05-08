@@ -16,10 +16,11 @@ export default {
         return new Response(null, { headers: corsHeaders });
       }
   
-      // Admin login API - Database backed
+      // Admin login API - Using environment variable password
       if (url.pathname === '/api/admin/login' && method === 'POST') {
         try {
           const { username, password } = await request.json();
+          const ADMIN_PASSWORD = env.ADMIN_PASSWORD || 'admin123';
           
           if (!username || !password) {
             return new Response(
@@ -31,74 +32,24 @@ export default {
             );
           }
   
-          const db = env.DB;
-          if (!db) {
-            // Fallback to simple password check if D1 not configured
-            const ADMIN_PASSWORD = env.ADMIN_PASSWORD || 'admin123';
-            if (username === 'admin' && password === ADMIN_PASSWORD) {
-              return new Response(JSON.stringify({ success: true, token: 'demo-token' }), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json', ...corsHeaders },
-              });
+          // Simple authentication
+          if (username === 'admin' && password === ADMIN_PASSWORD) {
+            // Generate simple token (no Buffer in Workers)
+            const token = btoa(`admin:${Date.now()}:${Math.random()}`);
+            
+            return new Response(JSON.stringify({ success: true, token, username: 'admin' }), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json', ...corsHeaders },
+            });
+          }
+  
+          return new Response(
+            JSON.stringify({ error: 'Invalid credentials' }),
+            {
+              status: 401,
+              headers: { 'Content-Type': 'application/json', ...corsHeaders },
             }
-            return new Response(
-              JSON.stringify({ error: 'Invalid credentials' }),
-              {
-                status: 401,
-                headers: { 'Content-Type': 'application/json', ...corsHeaders },
-              }
-            );
-          }
-  
-          // Query D1 for user
-          const user = await db
-            .prepare('SELECT id, password_hash FROM admin_users WHERE username = ? AND is_active = 1')
-            .bind(username)
-            .first();
-  
-          if (!user) {
-            return new Response(
-              JSON.stringify({ error: 'Invalid credentials' }),
-              {
-                status: 401,
-                headers: { 'Content-Type': 'application/json', ...corsHeaders },
-              }
-            );
-          }
-  
-          // Simple password comparison (in production, use bcrypt)
-          // For now, accept the plain password match
-          const isPasswordValid = password === env.ADMIN_PASSWORD || password === 'admin123';
-  
-          if (!isPasswordValid) {
-            return new Response(
-              JSON.stringify({ error: 'Invalid credentials' }),
-              {
-                status: 401,
-                headers: { 'Content-Type': 'application/json', ...corsHeaders },
-              }
-            );
-          }
-  
-          // Create session token
-          const token = Buffer.from(`${user.id}:${Date.now()}:${Math.random()}`).toString('base64');
-          const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-  
-          await db
-            .prepare('INSERT INTO admin_sessions (user_id, token, expires_at) VALUES (?, ?, ?)')
-            .bind(user.id, token, expiresAt)
-            .run();
-  
-          // Log activity
-          await db
-            .prepare('INSERT INTO admin_activity_log (user_id, action, details) VALUES (?, ?, ?)')
-            .bind(user.id, 'LOGIN', 'Admin logged in')
-            .run();
-  
-          return new Response(JSON.stringify({ success: true, token, username }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders },
-          });
+          );
         } catch (error) {
           console.log('[v0] Login error:', error);
           return new Response(

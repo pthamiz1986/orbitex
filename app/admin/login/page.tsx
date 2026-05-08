@@ -23,6 +23,8 @@ export default function AdminLogin() {
     try {
       const workerApi = process.env.NEXT_PUBLIC_WORKER_API || 'https://orbitex-api.pthamiz.workers.dev'
       
+      console.log('[v0] Login attempt with:', { username, workerApi })
+      
       const response = await fetch(`${workerApi}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -30,18 +32,29 @@ export default function AdminLogin() {
       })
 
       const data = await response.json()
+      console.log('[v0] Login response:', { status: response.ok, data })
 
       if (!response.ok) {
         throw new Error(data.error || 'Invalid credentials')
       }
 
       // Store token in localStorage
+      console.log('[v0] Storing token:', data.token)
       localStorage.setItem('admin_token', data.token)
       localStorage.setItem('admin_username', data.username)
+      
+      // Verify storage
+      const storedToken = localStorage.getItem('admin_token')
+      console.log('[v0] Verified token stored:', !!storedToken)
 
+      // Redirect to dashboard
+      console.log('[v0] Redirecting to /admin/dashboard')
       router.push('/admin/dashboard')
+      
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      const errorMsg = err instanceof Error ? err.message : 'Login failed'
+      console.log('[v0] Login error:', errorMsg)
+      setError(errorMsg)
     } finally {
       setIsLoading(false)
     }
