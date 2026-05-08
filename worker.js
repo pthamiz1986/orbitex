@@ -1,19 +1,119 @@
 // Cloudflare Worker - Backend API for ORBITEX
 
-export default {
-    async fetch(request, env, ctx) {
-      const url = new URL(request.url);
-      const method = request.method;
+// In-memory storage for demo (replace with D1 or KV for production)
+let contentStore = {
+    homepage: {
+      hero_title: 'Advanced Geospatial Solutions',
+      hero_subtitle: 'Precision Data, Expertise, Innovation',
+      hero_description: 'Enterprise-grade geospatial data, BIM consulting, and 3D scanning solutions',
+      cta_text: 'Explore Our Services',
+      cta_link: '/services',
+    },
+    services: [
+      {
+        id: 'bim',
+        name: 'BIM Consulting',
+        description: 'Building Information Modeling expertise for complex infrastructure and construction projects',
+        icon_name: 'Building2',
+        features: ['3D Model Development', 'Clash Detection', 'Coordination Management', 'Design Optimization'],
+        capabilities: ['Revit Expertise', 'Multi-discipline Coordination', 'Quality Assurance', 'Training'],
+      },
+      {
+        id: 'gis',
+        name: 'GIS Solutions',
+        description: 'Geospatial Information Systems for mapping, analysis, and spatial intelligence',
+        icon_name: 'Map',
+        features: ['Spatial Analysis', 'Data Mapping', 'Geospatial Database', 'Custom Applications'],
+        capabilities: ['ArcGIS Platform', 'Spatial Analysis', 'Custom Development', 'Data Integration'],
+      },
+      {
+        id: 'scan',
+        name: 'Scan & Survey',
+        description: '3D scanning and surveying services for precise geospatial data collection',
+        icon_name: 'Scan',
+        features: ['3D Point Clouds', 'Survey Grade Accuracy', 'Reality Capture', 'Digital Twins'],
+        capabilities: ['LiDAR Technology', 'Drone Surveys', 'Point Cloud Processing', 'As-Built Documentation'],
+      },
+    ],
+  };
   
-      // Enable CORS
+  export default {
+    async fetch(request, env) {
+      const { url, method } = new URL(request.url);
       const corsHeaders = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
       };
   
+      // Handle CORS preflight
       if (method === 'OPTIONS') {
-        return new Response(null, { headers: corsHeaders });
+        return new Response(null, {
+          status: 204,
+          headers: corsHeaders,
+        });
+      }
+  
+      const url_path = new URL(request.url).pathname;
+  
+      // Get homepage content
+      if (url_path === '/api/homepage' && method === 'GET') {
+        return new Response(JSON.stringify(contentStore.homepage), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        });
+      }
+  
+      // Update homepage content
+      if (url_path === '/api/homepage' && method === 'POST') {
+        try {
+          const data = await request.json();
+          contentStore.homepage = { ...contentStore.homepage, ...data };
+          console.log('[v0] Homepage updated:', contentStore.homepage);
+          
+          return new Response(JSON.stringify(contentStore.homepage), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        } catch (error) {
+          return new Response(
+            JSON.stringify({ error: 'Failed to update homepage' }),
+            {
+              status: 500,
+              headers: { 'Content-Type': 'application/json', ...corsHeaders },
+            }
+          );
+        }
+      }
+  
+      // Get services
+      if (url_path === '/api/services' && method === 'GET') {
+        return new Response(JSON.stringify(contentStore.services), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        });
+      }
+  
+      // Update services
+      if (url_path === '/api/services' && method === 'POST') {
+        try {
+          const data = await request.json();
+          contentStore.services = Array.isArray(data) ? data : contentStore.services;
+          console.log('[v0] Services updated:', contentStore.services);
+          
+          return new Response(JSON.stringify(contentStore.services), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        } catch (error) {
+          return new Response(
+            JSON.stringify({ error: 'Failed to update services' }),
+            {
+              status: 500,
+              headers: { 'Content-Type': 'application/json', ...corsHeaders },
+            }
+          );
+        }
       }
   
       // Admin login API - Using environment variable password
