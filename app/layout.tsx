@@ -7,25 +7,12 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'ORBITEX - Geospatial & BIM Solutions',
+  title: 'ORBITEX - Advanced Geospatial & BIM Solutions',
   description: 'Professional geospatial data, BIM consulting, and 3D scanning services for enterprise clients',
   generator: 'v0.app',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/orbitex-logo.png',
+    apple: '/orbitex-logo.png',
   },
 }
 
