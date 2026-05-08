@@ -27,36 +27,28 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadContent = async () => {
+    const loadContent = () => {
       try {
-        const workerApi = process.env.NEXT_PUBLIC_WORKER_API || 'https://orbitex-api.pthamiz.workers.dev';
-        
-        // Try to fetch from Worker API first
-        const response = await fetch(`${workerApi}/api/homepage`);
-        if (response.ok) {
-          const data = await response.json();
-          console.log('[v0] Loaded homepage from API:', data);
-          setHeroContent(data);
-          // Update localStorage as backup
-          localStorage.setItem('admin_homepage_content', JSON.stringify(data));
-        } else {
-          // Fallback to localStorage
-          const saved = localStorage.getItem('admin_homepage_content');
-          if (saved) {
-            setHeroContent(JSON.parse(saved));
-          }
-        }
-      } catch (error) {
-        console.log('[v0] Error loading homepage:', error);
-        // Fallback to localStorage
+        // Check localStorage FIRST for admin edits
         const saved = localStorage.getItem('admin_homepage_content');
         if (saved) {
           try {
-            setHeroContent(JSON.parse(saved));
+            const data = JSON.parse(saved);
+            console.log('[v0] Loaded homepage from localStorage:', data);
+            setHeroContent(data);
+            setIsLoading(false);
+            return;
           } catch (e) {
             console.log('[v0] Error parsing saved content:', e);
           }
         }
+        
+        // Fallback to defaults if nothing in localStorage
+        console.log('[v0] Using default homepage content');
+        setHeroContent(DEFAULT_HERO_CONTENT);
+      } catch (error) {
+        console.log('[v0] Error loading homepage:', error);
+        setHeroContent(DEFAULT_HERO_CONTENT);
       } finally {
         setIsLoading(false);
       }
